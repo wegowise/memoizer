@@ -12,12 +12,8 @@ module Memoizer
     attr_accessor :_memoizer_methods
 
     def memoize(*method_names)
-      @_memoizer_methods ||= []
-
       method_names.each do |method_name|
         safe_method_name = Memoizer.safe_name(method_name)
-        # save method names in class constant
-        @_memoizer_methods << safe_method_name
 
         memoized_ivar_name = "_memoized_#{safe_method_name}"
         aliased_original_method_name = "_unmemoized_#{method_name}"
@@ -67,8 +63,10 @@ module Memoizer
     end
 
     def unmemoize_all
-      self.class.instance_variable_get('@_memoizer_methods').to_a.each do |method_name|
-        unmemoize(method_name)
+      (methods + private_methods + protected_methods).each do |method|
+        if method.to_s =~ /^_unmemoized_(.*)/
+          unmemoize($1)
+        end
       end
     end
   end

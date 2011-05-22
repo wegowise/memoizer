@@ -8,6 +8,8 @@ class MemoizerSpecClass
   def returning_nil!() Date.today; nil; end
   memoize :no_params, :with_params?, :returning_nil!
 end
+class Beepbop < MemoizerSpecClass; end
+
 
 describe Memoizer do
   let(:today) { Date.today }
@@ -50,41 +52,28 @@ describe Memoizer do
       end
     end
 
-    describe '._memoizer_methods' do
-      class A < MemoizerSpecClass
-        def a() end
-        def b() end
-        def c() end
-        memoize :a, :b
-      end
-      class B < MemoizerSpecClass
-        def d() end
-        def e() end
-        def f() end
-        memoize "d", "f"
-      end
-      class C < MemoizerSpecClass
-        def z() end
-      end
-      it "saves names of memoized methods for each class" do
-        A._memoizer_methods.should == [:a, :b]
-        B._memoizer_methods.should == [:d, :f]
-        C._memoizer_methods.should be_nil
+    context "for subclasses" do
+      let(:object) { Beepbop.new }
+      it "still memoizes things" do
+        Timecop.freeze(today)
+        object.no_params.should == today
+        Timecop.freeze(tomorrow)
+        object.no_params.should == today
       end
     end
 
     context 'for private methods' do
-      class D < MemoizerSpecClass
+      class Beirut < MemoizerSpecClass
         def foo() bar; end
         private
         def bar() Date.today; end
         memoize :bar
       end
-      let(:object) { D.new }
+      let(:object) { Beirut.new }
 
       it "respects the privacy of the memoized method" do
-        D.private_method_defined?(:bar).should be_true
-        D.private_method_defined?(:_unmemoized_bar).should be_true
+        Beirut.private_method_defined?(:bar).should be_true
+        Beirut.private_method_defined?(:_unmemoized_bar).should be_true
       end
 
       it "memoizes things" do
@@ -96,17 +85,17 @@ describe Memoizer do
     end
 
     context 'for protected methods' do
-      class E < MemoizerSpecClass
+      class Wonka < MemoizerSpecClass
         def foo() bar; end
         protected
         def bar() Date.today; end
         memoize :bar
       end
-      let(:object) { E.new }
+      let(:object) { Wonka.new }
 
       it "respects the privacy of the memoized method" do
-        E.protected_method_defined?(:bar).should be_true
-        E.protected_method_defined?(:_unmemoized_bar).should be_true
+        Wonka.protected_method_defined?(:bar).should be_true
+        Wonka.protected_method_defined?(:_unmemoized_bar).should be_true
       end
 
       it "memoizes things" do
@@ -175,20 +164,43 @@ describe Memoizer do
         object.unmemoize(:today)
         object.today.should == today + 1
       end
+
+      context "for subclasses" do
+        let(:object) { Beepbop.new }
+        it "clears the memoized value" do
+          Timecop.freeze(today + 1)
+          object.today.should == today
+
+          object.unmemoize(:today)
+          object.today.should == today + 1
+
+          Timecop.freeze(today + 2)
+          object.today.should == today + 1
+        end
+      end
     end
 
     describe '#unmemoize_all' do
-      it "clears all memoized values" do
-        Timecop.freeze(today + 1)
-        object.today.should == today
-        object.plus_ndays(1).should == today + 1
-        object.plus_ndays(3).should == today + 3
+      shared_examples_for "unmemoizing methods" do
+        it "clears all memoized values" do
+          Timecop.freeze(today + 1)
+          object.today.should == today
+          object.plus_ndays(1).should == today + 1
+          object.plus_ndays(3).should == today + 3
 
-        object.unmemoize_all
+          object.unmemoize_all
 
-        object.today.should == today + 1
-        object.plus_ndays(1).should == today + 2
-        object.plus_ndays(3).should == today + 4
+          object.today.should == today + 1
+          object.plus_ndays(1).should == today + 2
+          object.plus_ndays(3).should == today + 4
+        end
+      end
+
+      it_should_behave_like "unmemoizing methods"
+
+      context "for subclasses" do
+        let(:object) { Beepbop.new }
+        it_should_behave_like "unmemoizing methods"
       end
     end
 
