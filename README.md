@@ -16,7 +16,7 @@ Usage
 To memoize an instance method:
 
     class A
-      extend Memoizer
+      include Memoizer
       def hello() 'hello!'; end
       memoize :hello
     end
@@ -30,11 +30,11 @@ Or you can memoize many methods at once:
       memoize :hello, :goodbye
     end
 
-To memoize class methods, be sure to extend the class:
+Memoizing class methods works the same way:
 
     class C
       class << self
-        extend Memoizer
+        include Memoizer
         def hello() 'hello!'; end
         memoize :hello
       end
