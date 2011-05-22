@@ -3,6 +3,10 @@ require 'spec_helper'
 
 class MemoizerSpecClass
   include Memoizer
+  def no_params() Date.today; end
+  def with_params?(ndays, an_array) Date.today + ndays + an_array.length; end
+  def returning_nil!() Date.today; nil; end
+  memoize :no_params, :with_params?, :returning_nil!
 end
 
 describe Memoizer do
@@ -11,12 +15,8 @@ describe Memoizer do
   describe '.memoize' do
     let(:object) { MemoizerSpecClass.new }
     let(:tomorrow) { Date.today + 1 }
-    context "for a method with no params" do
-      class MemoizerSpecClass
-        def no_params() Date.today; end
-        memoize :no_params
-      end
 
+    context "for a method with no params" do
       it "stores memoized value" do
         Timecop.freeze(today)
         object.no_params.should == today
@@ -25,38 +25,28 @@ describe Memoizer do
       end
     end
 
-    context "for a method with params" do
-      class MemoizerSpecClass
-        def with_params(ndays, an_array) Date.today + ndays + an_array.length; end
-        memoize :with_params
-      end
-
+    context "for a method with params (and ending in ?)" do
       it "stores memoized value" do
         Timecop.freeze(today)
-        object.with_params(1, [1,2]).should == (today + 3)
+        object.with_params?(1, [1,2]).should == (today + 3)
         Timecop.freeze(tomorrow)
-        object.with_params(1, [1,2]).should == (today + 3)
+        object.with_params?(1, [1,2]).should == (today + 3)
       end
       it "does not confuse one set of inputs for another" do
         Timecop.freeze(today)
-        object.with_params(1, [1,2]).should == (today + 3)
-        object.with_params(2, [1,2]).should == (today + 4)
+        object.with_params?(1, [1,2]).should == (today + 3)
+        object.with_params?(2, [1,2]).should == (today + 4)
         Timecop.freeze(tomorrow)
-        object.with_params(1, [1,2]).should == (today + 3)
-        object.with_params(1, [2,2]).should == (today + 4)
+        object.with_params?(1, [1,2]).should == (today + 3)
+        object.with_params?(1, [2,2]).should == (today + 4)
       end
     end
 
-    context "for a method that returns nil" do
-      class MemoizerSpecClass
-        def returning_nil() Date.today; nil; end
-        memoize :returning_nil
-      end
-
+    context "for a method that returns nil (and ends in !)" do
       it "stores the memoized value" do
-        object.returning_nil
+        object.returning_nil!
         Date.stub!(:today).and_raise(ArgumentError)
-        object.returning_nil.should be_nil
+        object.returning_nil!.should be_nil
       end
     end
 

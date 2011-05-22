@@ -4,6 +4,10 @@ module Memoizer
     base.send :include, InstanceMethods
   end
 
+  def self.safe_name(method_name)
+    method_name.to_s.sub(/\?\Z/, '_query').sub(/!\Z/, '_bang').to_sym
+  end
+
   module ClassMethods
     attr_accessor :_memoizer_methods
 
@@ -11,10 +15,11 @@ module Memoizer
       @_memoizer_methods ||= []
 
       method_names.each do |method_name|
+        safe_method_name = Memoizer.safe_name(method_name)
         # save method names in class constant
-        @_memoizer_methods << method_name.to_sym
+        @_memoizer_methods << safe_method_name
 
-        memoized_ivar_name = "_memoized_#{method_name}"
+        memoized_ivar_name = "_memoized_#{safe_method_name}"
         aliased_original_method_name = "_unmemoized_#{method_name}"
         attr_accessor memoized_ivar_name
         alias_method aliased_original_method_name, method_name
@@ -29,7 +34,7 @@ module Memoizer
           # if the method takes no inputs, store the value in an array
           if no_args
             if !memoized_value.is_a?(Array)
-              memoized_value = [self.send("_unmemoized_#{method_name}")]
+              memoized_value = [self.send(aliased_original_method_name)]
               self.instance_variable_set("@#{memoized_ivar_name}", memoized_value)
             end
             memoized_value.first
@@ -37,10 +42,10 @@ module Memoizer
           #otherwise store in a hash indexed by the arguments
           else
             if !memoized_value.is_a?(Hash)
-              memoized_value = {args => self.send("_unmemoized_#{method_name}", *args)}
+              memoized_value = {args => self.send(aliased_original_method_name, *args)}
               self.instance_variable_set("@#{memoized_ivar_name}", memoized_value)
             elsif !memoized_value.has_key?(args)
-              memoized_value[args] = self.send("_unmemoized_#{method_name}", *args)
+              memoized_value[args] = self.send(aliased_original_method_name, *args)
             end
             memoized_value[args]
           end
@@ -58,7 +63,7 @@ module Memoizer
 
   module InstanceMethods
     def unmemoize(method_name)
-      self.instance_variable_set("@_memoized_#{method_name}", nil)
+      self.instance_variable_set("@_memoized_#{Memoizer.safe_name(method_name)}", nil)
     end
 
     def unmemoize_all
