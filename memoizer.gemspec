@@ -16,6 +16,6 @@ Gem::Specification.new do |s|
   s.license = 'MIT'
 
   s.add_development_dependency('rake', '~> 10.4.2')
-  s.add_development_dependency('rspec', '>= 2.14.0', '< 3.0')
+  s.add_development_dependency('rspec', '~> 3.5.0')
   s.add_development_dependency('timecop', '~> 0.8.0')
 end
