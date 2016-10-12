@@ -4,7 +4,7 @@
 
 Memoizer will memoize the results of your methods. It acts much like
 `ActiveSupport::Memoizable` without all of that freezing business. The API for
-unmemoizing is also a bit more expicit.
+unmemoizing is also a bit more explicit.
 
 ## Install
 
