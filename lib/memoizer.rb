@@ -15,7 +15,6 @@ module Memoizer
   module ClassMethods
     def memoize(*method_names)
       method_names.each do |method_name|
-        safe_method_name = Memoizer.safe_name(method_name)
         memoized_ivar_name = Memoizer.ivar_name(method_name)
         unmemoized_method = "_unmemoized_#{method_name}"
 
@@ -52,7 +51,6 @@ module Memoizer
         elsif self.protected_method_defined?(unmemoized_method)
           protected method_name
         end
-
       end
     end
   end
@@ -70,5 +68,4 @@ module Memoizer
       end
     end
   end
-
 end
