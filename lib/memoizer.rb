@@ -24,7 +24,10 @@ module Memoizer
         no_args = self.instance_method(unmemoized_method).arity == 0
 
         define_method method_name do |*args|
-          memoized_value = self.instance_variable_get("@#{memoized_ivar_name}")
+
+          if instance_variable_defined?("@#{memoized_ivar_name}")
+            memoized_value = self.instance_variable_get("@#{memoized_ivar_name}")
+          end
 
           # if the method takes no inputs, store the value in an array
           if no_args
