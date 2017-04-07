@@ -9,7 +9,7 @@ module Memoizer
   end
 
   def self.ivar_name(method_name)
-    "_memoized_#{self.safe_name(method_name)}"
+    :"@_memoized_#{self.safe_name(method_name)}"
   end
 
   module ClassMethods
@@ -24,15 +24,15 @@ module Memoizer
 
         define_method method_name do |*args|
 
-          if instance_variable_defined?("@#{memoized_ivar_name}")
-            memoized_value = self.instance_variable_get("@#{memoized_ivar_name}")
+          if instance_variable_defined?(memoized_ivar_name)
+            memoized_value = self.instance_variable_get(memoized_ivar_name)
           end
 
           # if the method takes no inputs, store the value in an array
           if no_args
             if !memoized_value.is_a?(Array)
               memoized_value = [self.send(unmemoized_method)]
-              self.instance_variable_set("@#{memoized_ivar_name}", memoized_value)
+              self.instance_variable_set(memoized_ivar_name, memoized_value)
             end
             memoized_value.first
 
@@ -40,7 +40,7 @@ module Memoizer
           else
             if !memoized_value.is_a?(Hash)
               memoized_value = {args => self.send(unmemoized_method, *args)}
-              self.instance_variable_set("@#{memoized_ivar_name}", memoized_value)
+              self.instance_variable_set(memoized_ivar_name, memoized_value)
             elsif !memoized_value.has_key?(args)
               memoized_value[args] = self.send(unmemoized_method, *args)
             end
@@ -59,7 +59,7 @@ module Memoizer
 
   module InstanceMethods
     def unmemoize(method_name)
-      self.instance_variable_set("@#{Memoizer.ivar_name(method_name)}", nil)
+      self.instance_variable_set(Memoizer.ivar_name(method_name), nil)
     end
 
     def unmemoize_all
