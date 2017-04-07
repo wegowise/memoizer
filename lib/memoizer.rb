@@ -18,7 +18,6 @@ module Memoizer
         memoized_ivar_name = Memoizer.ivar_name(method_name)
         unmemoized_method = "_unmemoized_#{method_name}"
 
-        attr_accessor memoized_ivar_name
         alias_method unmemoized_method, method_name
 
         no_args = self.instance_method(unmemoized_method).arity == 0
