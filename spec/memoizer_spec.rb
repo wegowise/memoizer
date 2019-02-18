@@ -106,6 +106,48 @@ describe Memoizer do
       end
     end
 
+    context 'for methods with an arity of 0' do
+      class Arity0 < MemoizerSpecClass
+        def foo()
+        end
+
+        memoize :foo
+      end
+
+      it 'creates a memoized method with an arity of 0' do
+        expect(Arity0.instance_method(:foo).arity).to eq(0)
+      end
+
+    end
+
+    context 'for methods with an arity of 2' do
+      class Arity2 < MemoizerSpecClass
+        def foo(a, b)
+        end
+
+        memoize :foo
+      end
+
+      it 'creates a memoized method with an arity of 2' do
+        expect(Arity2.instance_method(:foo).arity).to eq(2)
+      end
+
+    end
+
+    context 'for methods with splat args' do
+      class AritySplat < MemoizerSpecClass
+        def foo(*args)
+        end
+
+        memoize :foo
+      end
+
+      it 'creates a memoized method with an arity of -1' do
+        expect(AritySplat.instance_method(:foo).arity).to eq(-1)
+      end
+
+    end
+
   end
 
 

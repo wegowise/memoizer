@@ -20,32 +20,44 @@ module Memoizer
 
         alias_method unmemoized_method, method_name
 
-        no_args = self.instance_method(unmemoized_method).arity == 0
+        arity = instance_method(unmemoized_method).arity
 
-        define_method method_name do |*args|
-
-          if instance_variable_defined?(memoized_ivar_name)
-            memoized_value = self.instance_variable_get(memoized_ivar_name)
-          end
-
-          # if the method takes no inputs, store the value in an array
-          if no_args
-            if !memoized_value.is_a?(Array)
-              memoized_value = [self.send(unmemoized_method)]
-              self.instance_variable_set(memoized_ivar_name, memoized_value)
+        case arity
+        when 0
+          module_eval(<<-RUBY)
+            def #{method_name}()
+              #{memoized_ivar_name} ||= [send(:#{unmemoized_method})]
+              #{memoized_ivar_name}.first
             end
-            memoized_value.first
+          RUBY
 
-          #otherwise store in a hash indexed by the arguments
-          else
-            if !memoized_value.is_a?(Hash)
-              memoized_value = {args => self.send(unmemoized_method, *args)}
-              self.instance_variable_set(memoized_ivar_name, memoized_value)
-            elsif !memoized_value.has_key?(args)
-              memoized_value[args] = self.send(unmemoized_method, *args)
+        when -1
+          module_eval(<<-RUBY)
+            def #{method_name}(*args)
+              #{memoized_ivar_name} ||= {}
+              if #{memoized_ivar_name}.has_key?(args)
+                #{memoized_ivar_name}[args]
+              else
+                #{memoized_ivar_name}[args] = send(:#{unmemoized_method}, *args)
+              end
             end
-            memoized_value[args]
-          end
+          RUBY
+
+        else
+          arg_names = (0..(arity - 1)).map { |i| "arg#{i}" }
+          args_ruby = arg_names.join(', ')
+
+          module_eval(<<-RUBY)
+            def #{method_name}(#{args_ruby})
+              args = [#{args_ruby}]
+              #{memoized_ivar_name} ||= {}
+              if #{memoized_ivar_name}.has_key?(args)
+                #{memoized_ivar_name}[args]
+              else
+                #{memoized_ivar_name}[args] = send(:#{unmemoized_method}, #{args_ruby})
+              end
+            end
+          RUBY
         end
 
         if self.private_method_defined?(unmemoized_method)
