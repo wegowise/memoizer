@@ -26,7 +26,7 @@ module Memoizer
         when 0
           module_eval(<<-RUBY)
             def #{method_name}()
-              #{memoized_ivar_name} ||= [send(:#{unmemoized_method})]
+              #{memoized_ivar_name} ||= [#{unmemoized_method}()]
               #{memoized_ivar_name}.first
             end
           RUBY
@@ -38,7 +38,7 @@ module Memoizer
               if #{memoized_ivar_name}.has_key?(args)
                 #{memoized_ivar_name}[args]
               else
-                #{memoized_ivar_name}[args] = send(:#{unmemoized_method}, *args)
+                #{memoized_ivar_name}[args] = #{unmemoized_method}(*args)
               end
             end
           RUBY
@@ -54,7 +54,7 @@ module Memoizer
               if #{memoized_ivar_name}.has_key?(args)
                 #{memoized_ivar_name}[args]
               else
-                #{memoized_ivar_name}[args] = send(:#{unmemoized_method}, #{args_ruby})
+                #{memoized_ivar_name}[args] = #{unmemoized_method}(#{args_ruby})
               end
             end
           RUBY
