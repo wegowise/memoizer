@@ -5,7 +5,7 @@ Gem::Specification.new do |s|
   s.name        = "memoized"
   s.version     = Memoized::VERSION
   s.authors     = ["Barun Singh", "Henning Koch"]
-  s.homepage    = "https://github.com/makandra/memoizer"
+  s.homepage    = "https://github.com/makandra/memoized"
   s.summary     = "Memoized caches the results of your method calls"
   s.description = s.summary
 
