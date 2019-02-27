@@ -1,6 +1,7 @@
 The MIT LICENSE
 
-Copyright (c) 2011 Wegowise Inc.
+Original gem "Memoizer" copyright (c) 2011 Wegowise Inc.
+Changes in this fork "Memoized" Copyright (c) 2019 makandra GmbH.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

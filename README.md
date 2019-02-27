@@ -1,36 +1,45 @@
-[![Build Status](https://travis-ci.org/wegowise/memoizer.svg?branch=setup-travis-ci)](https://travis-ci.org/wegowise/memoizer)
+[![Build Status](https://travis-ci.org/makandra/memoized.svg?branch=master)](https://travis-ci.org/makandra/memoized)
 
-# memoizer
+# Memoized
 
-Memoizer will memoize the results of your methods. It acts much like
+Memoized will memoize the results of your methods. It acts much like
 `ActiveSupport::Memoizable` without all of that freezing business. The API for
 unmemoizing is also a bit more explicit.
 
 ## Install
 
 ```
-$ gem install memoizer
+$ gem install memoized
 ```
 
 ## Usage
 
-To memoize an instance method:
+To define a memoized instance method, use `memoized def``:
 
 ```ruby
 class A
-  include Memoizer
-  def hello() 'hello!'; end
-  memoize :hello
+  include Memoized
+
+  memoize def hello
+    'hello!'
+  end
 end
 ```
 
-Or you can memoize many methods at once:
+You may also `memoize` one or more methods after they have been defined:
 
 ```ruby
 class B
-  extend Memoizer
-  def hello() 'hello!'; end
-  def goodbye() 'goodbye :('; end
+  include Memoized
+
+  def hello
+    'hello!'
+  end
+
+  def goodbye
+    'goodbye :('
+  end
+
   memoize :hello, :goodbye
 end
 ```
@@ -40,9 +49,11 @@ Memoizing class methods works the same way:
 ```ruby
 class C
   class << self
-    include Memoizer
-    def hello() 'hello!'; end
-    memoize :hello
+    include Memoized
+
+    memoize def hello
+      'hello!'
+    end
   end
 end
 ```
@@ -70,4 +81,10 @@ instance.unmemoize_all  # neither hello nor goodbye are memoized anymore
 
 ## License
 
-See [LICENSE.txt](https://github.com/wegowise/memoizer/blob/master/LICENSE.txt)
+See [LICENSE.txt](https://github.com/makandra/memoized/blob/master/LICENSE.txt)
+
+
+## Credits
+
+- This gem is a fork of [Memoizer](https://github.com/wegowise/memoizer) by [Wegowise](https://www.wegowise.com/).
+- Changes in this fork by [makandra](https://makandra.com).

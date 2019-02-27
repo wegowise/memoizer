@@ -1,21 +1,18 @@
-require 'memoizer'
-require 'spec_helper'
-
-class MemoizerSpecClass
-  include Memoizer
+class MemoizedSpecClass
+  include Memoized
   def no_params() Date.today; end
   def with_params?(ndays, an_array) Date.today + ndays + an_array.length; end
   def returning_nil!() Date.today; nil; end
   memoize :no_params, :with_params?, :returning_nil!
 end
-class Beepbop < MemoizerSpecClass; end
+class Beepbop < MemoizedSpecClass; end
 
 
-describe Memoizer do
+describe Memoized do
   let(:today) { Date.today }
 
   describe '.memoize' do
-    let(:object) { MemoizerSpecClass.new }
+    let(:object) { MemoizedSpecClass.new }
     let(:tomorrow) { Date.today + 1 }
 
     context "for a method with no params" do
@@ -63,7 +60,7 @@ describe Memoizer do
     end
 
     context 'for private methods' do
-      class Beirut < MemoizerSpecClass
+      class Beirut < MemoizedSpecClass
         def foo() bar; end
         private
         def bar() Date.today; end
@@ -85,7 +82,7 @@ describe Memoizer do
     end
 
     context 'for protected methods' do
-      class Wonka < MemoizerSpecClass
+      class Wonka < MemoizedSpecClass
         def foo() bar; end
         protected
         def bar() Date.today; end
@@ -107,7 +104,7 @@ describe Memoizer do
     end
 
     context 'for methods with an arity of 0' do
-      class Arity0 < MemoizerSpecClass
+      class Arity0 < MemoizedSpecClass
         def foo()
         end
 
@@ -121,7 +118,7 @@ describe Memoizer do
     end
 
     context 'for methods with an arity of 2' do
-      class Arity2 < MemoizerSpecClass
+      class Arity2 < MemoizedSpecClass
         def foo(a, b)
         end
 
@@ -135,7 +132,7 @@ describe Memoizer do
     end
 
     context 'for methods with splat args' do
-      class AritySplat < MemoizerSpecClass
+      class AritySplat < MemoizedSpecClass
         def foo(*args)
         end
 
@@ -152,13 +149,13 @@ describe Memoizer do
 
 
   describe 'instance methods' do
-    class MemoizerSpecClass
+    class MemoizedSpecClass
       def today() Date.today; end
       def plus_ndays(ndays) Date.today + ndays; end
       memoize :today, :plus_ndays
     end
 
-    let(:object) { MemoizerSpecClass.new }
+    let(:object) { MemoizedSpecClass.new }
     before do
       Timecop.freeze(today)
       expect(object.today).to eq(today)

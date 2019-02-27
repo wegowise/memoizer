@@ -1,7 +1,6 @@
-require 'rubygems'
-require 'bundler/setup'
 require 'date'
 require 'timecop'
+require 'memoized'
 
 RSpec.configure do |config|
   config.warnings = true

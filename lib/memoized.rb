@@ -1,4 +1,4 @@
-module Memoizer
+module Memoized
   def self.included(base)
     base.extend ClassMethods
     base.send :include, InstanceMethods
@@ -15,7 +15,7 @@ module Memoizer
   module ClassMethods
     def memoize(*method_names)
       method_names.each do |method_name|
-        memoized_ivar_name = Memoizer.ivar_name(method_name)
+        memoized_ivar_name = Memoized.ivar_name(method_name)
         unmemoized_method = "_unmemoized_#{method_name}"
 
         alias_method unmemoized_method, method_name
@@ -71,7 +71,7 @@ module Memoizer
 
   module InstanceMethods
     def unmemoize(method_name)
-      self.instance_variable_set(Memoizer.ivar_name(method_name), nil)
+      self.instance_variable_set(Memoized.ivar_name(method_name), nil)
     end
 
     def unmemoize_all
