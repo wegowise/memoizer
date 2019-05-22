@@ -145,6 +145,48 @@ describe Memoized do
 
     end
 
+    context 'for methods with a required and an optional arg' do
+
+      class ArityRequiredAndOptional < MemoizedSpecClass
+        def foo(a, b = 'default')
+          return [a, b]
+        end
+
+        memoize :foo
+      end
+
+      it 'creates a memoized method with a arity of -2' do
+        expect(ArityRequiredAndOptional.instance_method(:foo).arity).to eq(-2)
+      end
+
+      it "preserves the optional arg's default value" do
+        instance = ArityRequiredAndOptional.new
+        expect(instance.foo('foo')).to eq ['foo', 'default']
+      end
+
+    end
+
+    context 'for methods with a required arg and splat args' do
+
+      class ArityArgAndOptional < MemoizedSpecClass
+        def foo(a, *args)
+          return [a, args]
+        end
+
+        memoize :foo
+      end
+
+      it 'creates a memoized method with a arity of -2' do
+        expect(ArityArgAndOptional.instance_method(:foo).arity).to eq(-2)
+      end
+
+      it "passes the splat args to the memoized method" do
+        instance = ArityArgAndOptional.new
+        expect(instance.foo('foo', 'bar', 'baz')).to eq ['foo', ['bar', 'baz']]
+      end
+
+    end
+
   end
 
 

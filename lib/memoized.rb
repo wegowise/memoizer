@@ -22,8 +22,7 @@ module Memoized
 
         arity = instance_method(unmemoized_method).arity
 
-        case arity
-        when 0
+        if arity == 0
           module_eval(<<-RUBY)
             def #{method_name}()
               #{memoized_ivar_name} ||= [#{unmemoized_method}()]
@@ -31,7 +30,7 @@ module Memoized
             end
           RUBY
 
-        when -1
+        elsif arity == -1
           module_eval(<<-RUBY)
             def #{method_name}(*args)
               #{memoized_ivar_name} ||= {}
@@ -43,18 +42,36 @@ module Memoized
             end
           RUBY
 
-        else
-          arg_names = (0..(arity - 1)).map { |i| "arg#{i}" }
+        elsif arity < -1
+          # For Ruby methods that take a variable number of arguments,
+          # Method#arity returns -n-1, where n is the number of required arguments
+          required_arg_names = (1..(-arity - 1)).map { |i| "arg#{i}" }
+          required_args_ruby = required_arg_names.join(', ')
+
+          module_eval(<<-RUBY)
+            def #{method_name}(#{required_args_ruby}, *optional_args)
+              all_args = [#{required_args_ruby}, *optional_args]
+              #{memoized_ivar_name} ||= {}
+              if #{memoized_ivar_name}.has_key?(all_args)
+                #{memoized_ivar_name}[all_args]
+              else
+                #{memoized_ivar_name}[all_args] = #{unmemoized_method}(*all_args)
+              end
+            end
+          RUBY
+
+        else # positive arity
+          arg_names = (1..arity).map { |i| "arg#{i}" }
           args_ruby = arg_names.join(', ')
 
           module_eval(<<-RUBY)
             def #{method_name}(#{args_ruby})
-              args = [#{args_ruby}]
+              all_args = [#{args_ruby}]
               #{memoized_ivar_name} ||= {}
-              if #{memoized_ivar_name}.has_key?(args)
-                #{memoized_ivar_name}[args]
+              if #{memoized_ivar_name}.has_key?(all_args)
+                #{memoized_ivar_name}[all_args]
               else
-                #{memoized_ivar_name}[args] = #{unmemoized_method}(#{args_ruby})
+                #{memoized_ivar_name}[all_args] = #{unmemoized_method}(#{args_ruby})
               end
             end
           RUBY
