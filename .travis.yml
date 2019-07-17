@@ -1,5 +1,7 @@
 language: ruby
 
+dist: trusty
+
 rvm:
   - 2.1.8
   - 2.3.8
@@ -15,10 +17,6 @@ script: bundle exec rspec spec
 sudo: false
 
 cache: bundler
-
-notifications:
-  email:
-    - fail@makandra.de
 
 install:
   # Replace default Travis CI bundler script with a version that doesn't
