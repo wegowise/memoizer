@@ -1,6 +1,4 @@
-[![Build Status](https://travis-ci.org/makandra/memoized.svg?branch=master)](https://travis-ci.org/makandra/memoized)
-
-# Memoized
+# Memoized [![Tests](https://github.com/makandra/memoized/workflows/Tests/badge.svg)](https://github.com/makandra/memoized/actions)
 
 Memoized will memoize the results of your methods. It acts much like
 `ActiveSupport::Memoizable` without all of that freezing business. The API for
@@ -78,6 +76,22 @@ instance.goodbye        # the goodbye method is now memoized
 instance.unmemoize_all  # neither hello nor goodbye are memoized anymore
 ```
 
+## Development
+
+There are tests in `spec`. We only accept PRs with tests. To run tests:
+
+- Install Ruby 2.6.1
+- Install development dependencies using `bundle install`
+- Run tests using `bundle exec rake current_rspec`
+
+We recommend to test large changes against multiple versions of Ruby. Supported combinations are configured in `.github/workflows/test.yml`. We provide some rake tasks to help with this:
+
+- Install development dependencies using `bundle exec rake matrix:install`
+- Run tests using `bundle exec rake matrix:spec`
+
+Note that we have configured GitHub Actions to automatically run tests in all supported Ruby versions and dependency sets after each push. We will only merge pull requests after a green GitHub Actions run.
+
+I'm very eager to keep this gem leightweight and on topic. If you're unsure whether a change would make it into the gem, [talk to me beforehand](mailto:henning.koch@makandra.de).
 
 ## License
 
