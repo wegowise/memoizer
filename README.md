@@ -12,7 +12,7 @@ $ gem install memoized
 
 ## Usage
 
-To define a memoized instance method, use `memoized def``:
+To define a memoized instance method, use `memoize def`:
 
 ```ruby
 class A
