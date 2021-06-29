@@ -35,4 +35,4 @@ DEPENDENCIES
   timecop (~> 0.8.0)
 
 BUNDLED WITH
-   2.2.21
+   1.17.3
