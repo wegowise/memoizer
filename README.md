@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/wegowise/memoizer.svg?branch=setup-travis-ci)](https://travis-ci.org/wegowise/memoizer)
-
 # memoizer
 
 Memoizer will memoize the results of your methods. It acts much like
