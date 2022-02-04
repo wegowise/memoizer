@@ -1,5 +1,4 @@
 require 'memoizer'
-require 'spec_helper'
 
 class MemoizerSpecClass
   include Memoizer
