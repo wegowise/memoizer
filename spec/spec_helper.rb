@@ -1,6 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'date'
+require 'memoizer'
 require 'timecop'
 
 RSpec.configure do |config|

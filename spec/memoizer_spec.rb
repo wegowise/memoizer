@@ -1,5 +1,3 @@
-require 'memoizer'
-
 class MemoizerSpecClass
   include Memoizer
   def no_params() Date.today; end
