@@ -3,10 +3,79 @@ class MemoizerSpecClass
   def no_params() Date.today; end
   def with_params?(ndays, an_array) Date.today + ndays + an_array.length; end
   def returning_nil!() Date.today; nil; end
-  memoize :no_params, :with_params?, :returning_nil!
+
+  def with_hash_parameter(ndays, options = {})
+    subtract = options.fetch(:subtract, false)
+
+    if subtract
+      Date.today - ndays
+    else
+      Date.today + ndays
+    end
+  end
+
+  def with_only_hash_parameter(options = {})
+    ndays = options.fetch(:ndays)
+    subtract = options.fetch(:subtract, false)
+
+    if subtract
+      Date.today - ndays
+    else
+      Date.today + ndays
+    end
+  end
+
+  def with_kwargs(ndays, subtract: false)
+    if subtract
+      Date.today - ndays
+    else
+      Date.today + ndays
+    end
+  end
+
+  def with_only_kwargs(ndays:, subtract: false)
+    if subtract
+      Date.today - ndays
+    else
+      Date.today + ndays
+    end
+  end
+
+  def with_hash_and_kwargs(options = {}, **kwargs)
+    # This is one of the "confusing examples" given for why keyword arguments
+    # are changing in ruby 3. The keywords are assigned to the optional
+    # positional argument on ruby 2.6 and 2.7, but we might expect them to be
+    # assigned to kwargs.
+    #
+    # https://www.ruby-lang.org/en/news/2019/12/12/separation-of-positional-and-keyword-arguments-in-ruby-3-0/
+    #
+    # This method is designed to work around the unexpected behavior, but it
+    # should probably be avoided entirely.
+    if options.empty?
+      ndays = kwargs.fetch(:ndays)
+    else
+      ndays = options.fetch(:ndays)
+    end
+
+    subtract = kwargs.fetch(:subtract, false)
+
+    if subtract
+      Date.today - ndays
+    else
+      Date.today + ndays
+    end
+  end
+
+  memoize :no_params,
+          :with_params?,
+          :returning_nil!,
+          :with_hash_and_kwargs,
+          :with_hash_parameter,
+          :with_only_hash_parameter,
+          :with_kwargs,
+          :with_only_kwargs
 end
 class Beepbop < MemoizerSpecClass; end
-
 
 describe Memoizer do
   let(:today) { Date.today }
@@ -38,6 +107,123 @@ describe Memoizer do
         Timecop.freeze(tomorrow)
         expect(object.with_params?(1, [1,2])).to eq(today + 3)
         expect(object.with_params?(1, [2,2])).to eq(today + 4)
+      end
+    end
+
+    context "for a method with a mix of positional and hash args" do
+      it "stores memoized value" do
+        Timecop.freeze(today)
+        expect(object.with_hash_parameter(3)).to eq(today + 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_hash_parameter(3)).to eq(today + 3)
+      end
+
+      it "does not confuse one set of inputs for another" do
+        Timecop.freeze(today)
+        expect(object.with_hash_parameter(3)).to eq(today + 3)
+        expect(object.with_hash_parameter(3, subtract: true)).to eq(today - 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_hash_parameter(3)).to eq(today + 3)
+        expect(object.with_hash_parameter(3, subtract: true)).to eq(today - 3)
+      end
+    end
+
+    context "for a method with only a hash arg" do
+      it "stores memoized value" do
+        Timecop.freeze(today)
+        expect(object.with_only_hash_parameter(ndays: 3)).to eq(today + 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_only_hash_parameter(ndays: 3)).to eq(today + 3)
+      end
+
+      it "does not confuse one set of inputs for another" do
+        Timecop.freeze(today)
+        expect(object.with_only_hash_parameter(ndays: 3)).to eq(today + 3)
+        expect(object.with_only_hash_parameter(ndays: 3, subtract: true)).to eq(today - 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_only_hash_parameter(ndays: 3)).to eq(today + 3)
+        expect(object.with_only_hash_parameter(ndays: 3, subtract: true)).to eq(today - 3)
+      end
+    end
+
+    context "for a method with a mix of positional and keyword arguments" do
+      it "stores memoized value" do
+        Timecop.freeze(today)
+        expect(object.with_kwargs(3)).to eq(today + 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_kwargs(3)).to eq(today + 3)
+      end
+
+      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0')
+        it 'raises an error when the keyword args are passed as a hash' do
+          expect { object.with_kwargs(3, { subtract: true }) }.to raise_error(
+            ArgumentError,
+            'wrong number of arguments (given 2, expected 1)'
+          )
+        end
+      end
+
+      it "does not confuse one set of inputs for another" do
+        Timecop.freeze(today)
+        expect(object.with_kwargs(3)).to eq(today + 3)
+        expect(object.with_kwargs(3, **{ subtract: true })).to eq(today - 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_kwargs(3)).to eq(today + 3)
+        expect(object.with_kwargs(3, **{ subtract: true })).to eq(today - 3)
+      end
+    end
+
+    context "for a method with only keyword args" do
+      it "stores memoized value" do
+        Timecop.freeze(today)
+        expect(object.with_only_kwargs(ndays: 3)).to eq(today + 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_only_kwargs(ndays: 3)).to eq(today + 3)
+      end
+
+      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0')
+        it 'raises an error when the keyword args are passed as a hash' do
+          expect { object.with_only_kwargs({ ndays: 3, subtract: true }) }.to raise_error(
+              ArgumentError,
+              'wrong number of arguments (given 1, expected 0; required keyword: ndays)'
+            )
+        end
+      end
+
+      it "does not confuse one set of inputs for another" do
+        Timecop.freeze(today)
+        expect(object.with_only_kwargs(ndays: 3)).to eq(today + 3)
+        expect(object.with_only_kwargs(**{ ndays: 3, subtract: true })).to eq(today - 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_only_kwargs(ndays: 3)).to eq(today + 3)
+        expect(object.with_only_kwargs(**{ ndays: 3, subtract: true })).to eq(today - 3)
+      end
+    end
+
+    context "for a method with both a hash and keyword args" do
+      it "stores memoized value" do
+        Timecop.freeze(today)
+        expect(object.with_hash_and_kwargs({ ndays: 3 }, subtract: false)).to eq(today + 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_hash_and_kwargs({ ndays: 3 }, subtract: false)).to eq(today + 3)
+      end
+
+      if Gem::Version.new(RUBY_VERSION) >= Gem::Version.new('3.0')
+        it 'raises an error when the keyword args are passed as a hash' do
+          expect { object.with_hash_and_kwargs({ ndays: 3 }, { subtract: true }) }.to raise_error(
+              ArgumentError,
+              'wrong number of arguments (given 2, expected 0..1)'
+            )
+        end
+      end
+
+      it "does not confuse one set of inputs for another" do
+        Timecop.freeze(today)
+        expect(object.with_hash_and_kwargs({ ndays: 3 })).to eq(today + 3)
+        expect(object.with_hash_and_kwargs({ ndays: 3 }, **{ subtract: true })).to eq(today - 3)
+        Timecop.freeze(tomorrow)
+        expect(object.with_hash_and_kwargs({ ndays: 3 })).to eq(today + 3)
+        expect(object.with_hash_and_kwargs({ ndays: 3 }, **{ subtract: true })).to eq(today - 3)
       end
     end
 

@@ -47,6 +47,7 @@ module Memoizer
             memoized_value[args]
           end
         end
+        ruby2_keywords method_name if respond_to?(:ruby2_keywords, true)
 
         if self.private_method_defined?(unmemoized_method)
           private method_name
