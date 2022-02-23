@@ -14,14 +14,14 @@ module Memoizer
 
   module ClassMethods
     def memoize(*method_names)
-      @memoizer_memoized_methods ||= []
+      @memoizer_memoized_methods ||= {}
 
       method_names.each do |method_name|
         # If the method is already memoized, don't do anything
-        if @memoizer_memoized_methods.include?(method_name)
+        if @memoizer_memoized_methods[method_name]
           next
         else
-          @memoizer_memoized_methods << method_name
+          @memoizer_memoized_methods[method_name] = true
         end
 
         memoized_ivar_name = Memoizer.ivar_name(method_name)
