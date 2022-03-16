@@ -11,8 +11,13 @@ This project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html
 
 ### Compatible changes
 
--
+- Activate rubygems MFA
 
+## 1.0.2 - 2019-05-22
+
+### Compatible changes
+
+- Preserve arity of methods with optional arguments
 
 ## 1.0.1 - 2019-02-27
 
